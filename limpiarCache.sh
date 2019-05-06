@@ -4,3 +4,4 @@ rm ./*/__pycache__/*
 rm ./*/migrations/__pycache__/*
 rm -r ./media/documentos/*
 rm -r ./media/profiles/*
+rm db.sqlite3
