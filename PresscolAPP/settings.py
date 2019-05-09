@@ -120,4 +120,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
+
 STATIC_URL = '/static/'
+
+from django.urls import reverse_lazy
+
+LOGIN_URL = reverse_lazy('login')
+LOGIN_REDIRECT_URL = reverse_lazy('index')
+LOGOUT_URL = reverse_lazy('logout')
+#Para las fotos
+MEDIA_URL = '/media/'
+INTERCEPT_REDIRECTS = False
+INTERNAL_IPS = ('127.0.0.1',)
+

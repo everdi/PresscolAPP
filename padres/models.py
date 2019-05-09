@@ -1,10 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User #, AbstractUser, Group, Permission
+from django.db.models.manager import EmptyManager
 from django.utils.translation import ugettext as _
 from datetime import datetime
 # Create your models here.
 
-class Padre(models.Model):
+class Tutor(models.Model):
     tut_nombre = models.OneToOneField(User, on_delete=models.CASCADE, null= True)
     tut_apellidos = models.CharField(max_length = 150, null = True)
     tut_numero = models.CharField(max_length = 15, null = True)
@@ -20,4 +21,21 @@ class Padre(models.Model):
         
         permissions = (
             ('is_tutorr', 'Is_Tutorr'),
+        )
+    
+    
+class Profesor(models.Model):
+    pro_nombre = models.OneToOneField(User, on_delete= models.CASCADE, null = True)
+    pro_nombres = models.CharField(max_length=80, default='s')
+    pro_apellidoPaterno =models.CharField(max_length=70, default = 's')
+    pro_apellidoMaterno = models.CharField(max_length=70, default = 's')
+    pro_fechaNacimento = models.DateField(default = datetime.now, blank = True)
+    
+    def __str__(self):
+        return str(self.pro_nombre.username)
+    
+    class Meta:
+        
+        permissions = (
+            ('is_teacher', 'Is_Teacher'),
         )
