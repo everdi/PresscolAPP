@@ -37,3 +37,50 @@ class AgregarAlumConEstilo(FormView):
         alu.save()
         return super(AgregarAlumConEstilo,self).form_valid(form)
 
+def Index(request):
+    user = request.user
+    if user.is_active is True:
+        if user.is_staff is False :
+            if user.has_perm('padres.is_teacher'):
+                yar = datetime.now().year
+                today = date.today()
+                wk = today.isocalendar()[1]
+                inicio, fin = get_week_days(yar ,wk)
+                prf = Profesor.objects.get(pro_nombre = user)
+                grp = grupos.objects.select_related().filter(gru_maestro = prf)
+                almGRUP = []
+                for k in grp:
+                    almGRUP.append({"Alumnos": k.gru_alumnos.all(), "Grupo": k.id})
+
+                evaluacionesArray = []
+                for j in range(len(almGRUP)):
+                    kj = []
+                    for hj in almGRUP[j]['Alumnos']:
+                        kj.append(hj.id)
+
+                    diarios = []
+                    amevals = []
+                    evalpos = []
+                    
+
+                    diar = DiarioTrabajo.objects.select_related().filter(DT_fecha = today).filter(DT_alumno__id__in = kj)
+                    idDiar = []
+                    aluDiar = []           
+                    for ml in diar:
+                        idDiar.append(ml.id)
+                        aluDiar.append(ml.DT_alumno.id)
+
+                    diarios.append({"Diario": idDiar, "Alumno": aluDiar})
+                    evaluacionesArray.append({"Grupo": almGRUP[j]['Grupo'], "Alumnos": amevals, "EvalId": evalpos, "Diario": diarios})
+                ctx = {"Perfil": prf, "Grupos": grp, "Evaluados": evaluacionesArray}
+                print(ctx)
+            if user.has_perm('padres.is_tutorr'):
+                tur = Tutor.objects.get(tut_nombre = user)
+                alm = alumnos.objects.filter(alu_tutores__in = [tur])
+                ctx = {"Alumno":alm}        
+            
+            return render(request,'alumnos/index.html', ctx)
+        else:
+            return render(request,'alumnos/index.html')
+        
+    return render(request,'alumnos/index.html')
