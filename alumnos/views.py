@@ -2,12 +2,12 @@ from django.shortcuts import render
 from alumnos.models import alumnos
 from django.contrib.auth.models import User
 from django.views.generic import CreateView, ListView,DetailView, UpdateView, DetailView, FormView
-from alumnos.forms import Alumno_Chido
+from alumnos.forms import Alumno_Chido, Alumno_Eva
 from django.urls import reverse_lazy
 from django.core import serializers
 from django.http import JsonResponse, HttpResponse
 from padres.models import Tutor, Profesor
-
+from maestros.models import Evaluacion
 import string
 from datetime import date, timedelta, datetime
 
@@ -84,3 +84,114 @@ def Index(request):
             return render(request,'alumnos/index.html')
         
     return render(request,'alumnos/index.html')
+
+
+class EvaluarAlumno(FormView):
+    template_name = "alumnos/evaluar.html"
+    form_class = Alumno_Eva
+    success_url = reverse_lazy('reporteEvaluacion')
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super(EvaluarAlumno, self).get_context_data(*args, **kwargs)
+        #ctx['slug'] = self.kwargs['slug'] # or Tag.objects.get(slug=...)
+        slug = self.kwargs['slug']
+        ctx ['alumno'] = alumnos.objects.get(slug=slug)
+        return ctx
+    
+    def form_valid(self, form):
+        eva = Evaluacion()
+        filtro = form.cleaned_data['E_maestro']
+        maes = Profesor.objects.get(pro_nombre=filtro)
+        eva.E_maestro = maes
+        filtroalum = form.cleaned_data['E_alumno']
+        alu = alumnos.objects.get(alu_nombre=filtroalum)
+        eva.E_alumno = alu
+        eva.E_fecha = form.cleaned_data['E_fecha']
+        eva.E_comparte = form.cleaned_data['E_comparte']
+        eva.E_apoya =  form.cleaned_data['E_apoya']
+        eva.E_pregunta =  form.cleaned_data['E_pregunta']
+        eva.E_sugerencia =  form.cleaned_data['E_sugerencia']
+        eva.E_controla = form.cleaned_data['E_controla']
+        eva.E_cuida =  form.cleaned_data['E_cuida']
+        eva.E_espera =  form.cleaned_data['E_espera']
+        eva.E_negocia =  form.cleaned_data['E_negocia']
+        eva.E_trabajaEquipo =  form.cleaned_data['E_trabajaEquipo']
+        eva.E_respeta =  form.cleaned_data['E_respeta']
+        eva.E_cuidadoso =  form.cleaned_data['E_cuidadoso']
+        eva.E_involucra =  form.cleaned_data['E_involucra']
+        eva.E_iniciativa =  form.cleaned_data['E_iniciativa']
+        eva.E_riesgo =  form.cleaned_data['E_riesgo']
+        eva.E_estrategias = form.cleaned_data['E_estrategias']
+        eva.E_seExpresa =  form.cleaned_data['E_seExpresa']
+        #lenguaje y comunicacion
+        eva.E_mencionaNombre =  form.cleaned_data['E_mencionaNombre']
+        eva.E_mencionaDomicilio =  form.cleaned_data['E_mencionaDomicilio']
+        eva.E_expresaSentir  =  form.cleaned_data['E_expresaSentir']
+        eva.E_exprasaSentimientos =  form.cleaned_data['E_exprasaSentimientos']
+        eva.E_recuerdaSusesos =  form.cleaned_data['E_recuerdaSusesos']
+        eva.E_solicitaPalabra =  form.cleaned_data['E_solicitaPalabra']
+        eva.E_respetaTurno =  form.cleaned_data['E_respetaTurno']
+        eva.E_explica =  form.cleaned_data['E_explica']
+        eva.E_formulaPreguntas =  form.cleaned_data['E_formulaPreguntas']
+        eva.E_comprendeTareas =  form.cleaned_data['E_comprendeTareas']
+        eva.E_solicitaAyuda = form.cleaned_data['E_solicitaAyuda']
+        eva.E_conversa = form.cleaned_data['E_conversa']
+        eva.E_expresaInformacion = form.cleaned_data['E_expresaInformacion']
+        eva.E_escucha = form.cleaned_data['E_escucha']
+        eva.E_narra = form.cleaned_data['E_narra']
+        eva.E_creaCuentos = form.cleaned_data['E_creaCuentos']
+        eva.E_memorizaPoemas = form.cleaned_data['E_memorizaPoemas']
+        #Pensamiento matematico
+        eva.E_realizaConteo =form.cleaned_data['E_realizaConteo']
+        eva.E_reconoce = form.cleaned_data['E_reconoce']
+        eva.E_plantea = form.cleaned_data['E_plantea']
+        eva.E_sabeContar = form.cleaned_data['E_sabeContar']
+        eva.E_sabeEscribir = form.cleaned_data['E_sabeEscribir']
+        eva.E_izquierdaDerecha = form.cleaned_data['E_izquierdaDerecha']
+        eva.E_arribaAbajo = form.cleaned_data['E_arribaAbajo']
+        eva.E_llenoVacio = form.cleaned_data['E_llenoVacio']
+        eva.E_conoceDiasMeses = form.cleaned_data['E_conoceDiasMeses']
+        eva.E_ayerMañana = form.cleaned_data['E_ayerMañana']
+        #Exploracion y conocimentos del mundo
+        eva.E_describeSeresVivos = form.cleaned_data['E_describeSeresVivos']
+        eva.E_identificaSeresVivos = form.cleaned_data['E_identificaSeresVivos']
+        eva.E_describeFenomeno = form.cleaned_data['E_describeFenomeno']
+        eva.E_clasifica = form.cleaned_data['E_clasifica']
+        eva.E_SigueNormas = form.cleaned_data['E_SigueNormas']
+        eva.E_manipula = form.cleaned_data['E_manipula']
+        eva.E_pruebas = form.cleaned_data['E_pruebas']
+        eva.E_reconoceExperimento = form.cleaned_data['E_reconoceExperimento']
+        eva.E_expresaIdeas = form.cleaned_data['E_expresaIdeas']
+        eva.E_establecePresePasa = form.cleaned_data['E_establecePresePasa']
+        eva.E_comparteInformacion = form.cleaned_data['E_comparteInformacion']
+        eva.E_identificaAmenazas = form.cleaned_data['E_identificaAmenazas']
+        #expresion y apreciacion artistica
+        eva.E_escuchaYCanta = form.cleaned_data['E_escuchaYCanta']
+        eva.E_sigueRitmo = form.cleaned_data['E_sigueRitmo']
+        eva.E_inventaCanciones = form.cleaned_data['E_inventaCanciones']
+        eva.E_modifica = form.cleaned_data['E_modifica']
+        eva.E_identificaDife = form.cleaned_data['E_identificaDife']
+        eva.E_reproduceSecu = form.cleaned_data['E_reproduceSecu']
+        eva.E_reconoceGeneroMu = form.cleaned_data['E_reconoceGeneroMu']
+        eva.E_baila = form.cleaned_data['E_baila']
+        eva.E_dramatizacion = form.cleaned_data['E_dramatizacion']
+        eva.E_participa = form.cleaned_data['E_participa']
+        eva.E_representa = form.cleaned_data['E_representa']
+        eva.E_improvisa = form.cleaned_data['E_improvisa']
+        eva.E_manipulaMateriales = form.cleaned_data['E_manipulaMateriales']
+        eva.E_observaRe = form.cleaned_data['E_observaRe']
+        eva.E_memorizaAutor = form.cleaned_data['E_memorizaAutor']
+        #desarrollo fisico y salud
+        eva.E_desplaza = form.cleaned_data['E_desplaza']
+        eva.E_muestra = form.cleaned_data['E_muestra']
+        eva.E_participaJuegos = form.cleaned_data['E_participaJuegos']
+        eva.E_jalaEmpuja = form.cleaned_data['E_jalaEmpuja']
+        eva.E_explora = form.cleaned_data['E_explora']
+        eva.E_arma = form.cleaned_data['E_arma']
+        eva.E_practica = form.cleaned_data['E_practica']
+        eva.E_conocePractica = form.cleaned_data['E_conocePractica']
+        eva.E_conocePropone = form.cleaned_data['E_conocePropone']
+        eva.E_reconoceAmbien = form.cleaned_data['E_reconoceAmbien']
+        eva.E_identificaPeligro = form.cleaned_data['E_identificaPeligro']
+        eva.save()
+        return super(EvaluarAlumno,self).form_valid(form)

@@ -4,6 +4,7 @@ from django.utils.translation import ugettext as _
 from padres.models import Profesor
 from alumnos.models import alumnos
 from datetime import datetime
+from django.db.models.manager import EmptyManager
 # Create your models here.
 
 class grupos(models.Model):

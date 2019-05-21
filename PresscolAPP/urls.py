@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
 from django.contrib.auth.views import logout_then_login
-from alumnos.views import  AgregarAlumConEstilo, Index
+from alumnos.views import  AgregarAlumConEstilo, Index, EvaluarAlumno
 from padres.views import login
 #para las fotos
 from django.conf import settings
@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^alumnos/agregar',AgregarAlumConEstilo.as_view(),name='alumnos_agregarxd'),
      url(r'login/', login, name='login'),
     url(r'^$',Index, name='index'),
+    path('evaluar/<slug:slug>', EvaluarAlumno.as_view()),
     
     #url para alumnos 
     
