@@ -18,7 +18,11 @@ from django.urls import path
 from django.conf.urls import url, include
 from django.contrib.auth.views import logout_then_login
 from alumnos.views import  AgregarAlumConEstilo, Index, EvaluarAlumno
-from padres.views import login
+from padres.views import login, addTutor
+
+from django.conf import settings
+from django.conf.urls.static import static
+from django.views.static import serve
 #para las fotos
 from django.conf import settings
 from django.conf.urls.static import static
@@ -27,11 +31,19 @@ from django.views.static import serve
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^alumnos/agregar',AgregarAlumConEstilo.as_view(),name='alumnos_agregarxd'),
-     url(r'login/', login, name='login'),
+    url(r'login/', login, name='login'),
     url(r'^$',Index, name='index'),
     path('evaluar/<slug:slug>', EvaluarAlumno.as_view()),
-    
-    #url para alumnos 
+    url(r'^padres/agregar', addTutor.as_view(), name="AddTutor"),
+    ]
+
+#para las fotos
+if settings.DEBUG:
+    urlpatterns+=static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns     
     
 
-]
+
