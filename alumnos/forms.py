@@ -3,6 +3,18 @@ from alumnos.models import alumnos
 from padres.models import Tutor
 import datetime
 
+#class Alumno_Form(forms.ModelForm):
+#	
+#	model = alumnos
+#	field = "__all__"
+class Alumno_Form(forms.ModelForm):
+	class Meta:
+		model = alumnos
+		fields = "__all__"
+        
+        #widgets = {
+        #    'alu_nombre' = forms.TextInput(attrs = {'class': 'form-control'})
+        #}
 class Alumno_Chido(forms.Form):
 	alu_nombre = forms.CharField(label='Nombres:', widget=forms.TextInput(attrs={'class':'form-control','readonly':'readonly'}))
 	alu_genero = forms.CharField(label='Genero:', widget=forms.TextInput(attrs={'class':'form-control'}))
@@ -102,3 +114,11 @@ class Alumno_Eva(forms.Form):
 	E_conocePropone = forms.CharField(label='Contruye o modela objetos de su propia creación:', widget=forms.TextInput(attrs={'type':'number','min':'1','max':'3','min':'1','max':'3','value':'1'}))
 	E_reconoceAmbien = forms.CharField(label='Reconoce algunos problemas ambientales y sus repercusiones:', widget=forms.TextInput(attrs={'type':'number','min':'1','max':'3','min':'1','max':'3','value':'1'}))
 	E_identificaPeligro = forms.CharField(label='Identidica que hace ren caso de peligro a su persona, a la familia o a la comunidad:', widget=forms.TextInput(attrs={'type':'number','min':'1','max':'3','min':'1','max':'3','value':'1'}))
+
+class Alumno_EvaDiario(forms.Form):
+	DT_maestro = forms.CharField(label='Maestro:', widget=forms.TextInput(attrs={'class':'form-control','readonly':'readonly'}))
+	DT_alumno = forms.CharField(label='Alumno:', widget=forms.TextInput(attrs={'class':'form-control','readonly':'readonly'}))
+	DT_fecha = forms.DateField(label='Fecha de evaluacion:',initial=datetime.date.today, widget=forms.TextInput(attrs={'type':'date','readonly':'readonly'}))
+	DT_descripcion = forms.CharField(label='Descripcion:', widget=forms.TextInput(attrs={'class':'form-control'}))
+	DT_actividadApoyo = forms.CharField(label='Actividad de apoyo:', widget=forms.TextInput(attrs={'class':'form-control'}))
+	DT_necesidades = forms.CharField(label='Necesidades:', widget=forms.TextInput(attrs={'class':'form-control'}))	

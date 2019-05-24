@@ -2,40 +2,24 @@ from django.shortcuts import render
 from alumnos.models import alumnos
 from django.contrib.auth.models import User
 from django.views.generic import CreateView, ListView,DetailView, UpdateView, DetailView, FormView
-from alumnos.forms import Alumno_Chido, Alumno_Eva
+from alumnos.forms import Alumno_Form, Alumno_Chido, Alumno_Eva, Alumno_EvaDiario
 from django.urls import reverse_lazy
 from django.core import serializers
 from django.http import JsonResponse, HttpResponse
 from padres.models import Tutor, Profesor
-from maestros.models import Evaluacion
+from maestros.models import Evaluacion, grupos, DiarioTrabajo
 import string
 from datetime import date, timedelta, datetime
 
+def get_week_days(year, week):
+    d = date(year,1,1)
+    if(d.weekday()>3):
+        d = d+timedelta(7-d.weekday())
+    else:
+        d = d - timedelta(d.weekday())
+    dlt = timedelta(days = (week-1)*7)
+    return d + dlt,  d + dlt + timedelta(days=6)
 
-# Create your views here.
-
-class AgregarAlumConEstilo(FormView):
-    template_name = "alumnos/crear.html"
-    form_class = Alumno_Chido
-    success_url = reverse_lazy('alumnos_reporte')
-    
-    def form_valid(self, form):
-        alu = alumnos()
-        alu.alu_nombre = form.cleaned_data['alu_nombre']
-        alu.alu_genero = form.cleaned_data['alu_genero']
-        alu.save()
-        gen = form.cleaned_data['alu_genero']
-        if gen == 'Masculino':
-            alu.alu_foto = 'media/default/boy.png'
-        else:
-            alu.alu_foto = 'media/default/girl.jpg'
-        alu.alu_tutores.set(form.cleaned_data['alu_tutores'])
-        alu.alu_vigente = form.cleaned_data['alu_vigente']
-        alu.alu_fechaIngreso = form.cleaned_data['alu_fechaIngreso']
-        alu.alu_observaciones = form.cleaned_data['alu_observaciones']
-        alu.slug =form.cleaned_data['slug']
-        alu.save()
-        return super(AgregarAlumConEstilo,self).form_valid(form)
 
 def Index(request):
     user = request.user
@@ -61,7 +45,10 @@ def Index(request):
                     diarios = []
                     amevals = []
                     evalpos = []
-                    
+                    evals =  Evaluacion.objects.filter(E_alumno__id__in = kj).filter(E_fecha__range = [inicio, fin])
+                    for nh in evals:
+                        amevals.append(nh.E_alumno.id)
+                        evalpos.append({"IDA": nh.E_alumno.id, "EvaId": nh.id})
 
                     diar = DiarioTrabajo.objects.select_related().filter(DT_fecha = today).filter(DT_alumno__id__in = kj)
                     idDiar = []
@@ -85,6 +72,115 @@ def Index(request):
         
     return render(request,'alumnos/index.html')
 
+#import random, string
+#x = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(16 ))
+
+#def Alumno_Formulario(request):
+#	form = Alumno_Form(request.POST or None)
+#	if request.method == "POST":
+#		if form.is_valid():
+#			form.save()
+#	return render(request,'alumnos/formulario.html',{"form":form})
+
+class AlumnoCreate(CreateView):
+	model = alumnos
+	fields = "__all__"
+	template_name = "alumnos/crear.html"
+	success_url = reverse_lazy("alumnos_reporte")
+
+class AlumnoReporte(ListView):
+	template_name = "alumnos/reporte.html"
+	model = alumnos
+
+class DiarioReporte(ListView):
+    template_name="evaluaciones/reporteDiario.html"
+    today = date.today()
+    model = DiarioTrabajo
+    queryset = DiarioTrabajo.objects.filter(DT_fecha__startswith=today)
+
+class EvaluacionReporte(ListView):
+    template_name="evaluaciones/reporteEvaluacion.html"
+    model = Evaluacion
+    date = date.today()
+    start_week = date - timedelta(date.weekday())
+    end_week = start_week + timedelta(7)
+    queryset = Evaluacion.objects.filter(E_fecha__range= [start_week, end_week])
+
+def busquedaTurores(request):
+    if  request.method == 'GET':
+        datos = []
+        filtro = request.GET['filtro']
+        data =  Tutor.objects.select_related().filter(tut_apellidos__contains = filtro)
+        for dt in data:
+            datos.append({"Usuario": str(dt.tut_nombre.username), 'Apellidos': str(dt.tut_apellidos), 'Numero':str(dt.tut_numero), 'Descripcion':str(dt.tut_descripcion)})
+
+        data = serializers.serialize('json',data)
+    else:
+        data = ""
+    return HttpResponse(str(datos))
+
+class ReporteNoChafa(ListView):
+	template_name="alumnos/reporte_no_chafa.html"
+	model = alumnos #alumnos.object.all()
+	paginate_by = 5
+
+    #def get_context_data(self,**kwargs):
+    #    obj = self.get_object()
+    #    dic={
+    #        "name:"obj.name.username,
+    #        "aldea:"obj.aldea,
+    #        "nature chakra:"obj.nature_chakra
+    #    }
+    #    return dic
+    #
+    #def render_to_response(self):
+    #    return self
+    #
+def busquedaAlumno(request):
+    if request.method == 'GET':
+        filtro = request.GET['filtro']
+        data = serializers.serialize('json', alumnos.objects.filter(alu_nombre__contains = filtro))
+    else:
+        data = ""
+    return HttpResponse(data)
+
+class Detail_ninja(DetailView):
+    template_name="amunlos/detalleAlumno.html"
+    model = alumnos
+    
+class Update_Alumno(UpdateView):
+    template_name = 'alumnos/updateA.html'
+    model = alumnos
+    fields = '__all__'
+    success_url = reverse_lazy('alumnos_reporte')
+    
+class Detail_Alumno(DetailView):
+    template_name="alumnos/detalleAlumno.html"
+    model = alumnos
+
+class AgregarAlumConEstilo(FormView):
+    template_name = "alumnos/crear.html"
+    form_class = Alumno_Chido
+    success_url = reverse_lazy('alumnos_reporte')
+    
+    def form_valid(self, form):
+        alu = alumnos()
+        alu.alu_nombre = form.cleaned_data['alu_nombre']
+        alu.alu_genero = form.cleaned_data['alu_genero']
+        #alu.alu_tutores = form.cleaned_data['alu_tutores']
+        alu.save()
+        gen = form.cleaned_data['alu_genero']
+        if gen == 'Masculino':
+            alu.alu_foto = 'media/default/boy.png'
+        else:
+            alu.alu_foto = 'media/default/girl.jpg'
+        alu.alu_tutores.set(form.cleaned_data['alu_tutores'])
+        alu.alu_vigente = form.cleaned_data['alu_vigente']
+        alu.alu_fechaIngreso = form.cleaned_data['alu_fechaIngreso']
+        alu.alu_observaciones = form.cleaned_data['alu_observaciones']
+        alu.slug =form.cleaned_data['slug']
+        alu.save()
+        return super(AgregarAlumConEstilo,self).form_valid(form)
 
 class EvaluarAlumno(FormView):
     template_name = "alumnos/evaluar.html"
@@ -106,6 +202,14 @@ class EvaluarAlumno(FormView):
         filtroalum = form.cleaned_data['E_alumno']
         alu = alumnos.objects.get(alu_nombre=filtroalum)
         eva.E_alumno = alu
+        #eva = Evaluacion()
+        #filtro = form.cleaned_data['E_maestro']
+        #maeusr = User.objects.get(username = filtro)
+        #maes = Profesor.objects.get(pro_nombre=maeusr)
+        #eva.E_maestro = maes
+        #filtroalum = form.cleaned_data['E_alumno']
+        #alu = alumnos.objects.get(alu_nombre=filtroalum)
+        #eva.E_alumno = alu
         eva.E_fecha = form.cleaned_data['E_fecha']
         eva.E_comparte = form.cleaned_data['E_comparte']
         eva.E_apoya =  form.cleaned_data['E_apoya']
@@ -195,3 +299,53 @@ class EvaluarAlumno(FormView):
         eva.E_identificaPeligro = form.cleaned_data['E_identificaPeligro']
         eva.save()
         return super(EvaluarAlumno,self).form_valid(form)
+
+class EvaDiario(FormView):
+    template_name = "alumnos/evaluarDiario.html"
+    form_class = Alumno_EvaDiario
+    success_url = reverse_lazy('reporteDiario')
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super(EvaDiario, self).get_context_data(*args, **kwargs)
+        #ctx['slug'] = self.kwargs['slug'] # or Tag.objects.get(slug=...)
+        slug = self.kwargs['slug']
+        ctx ['alumno'] = alumnos.objects.get(slug=slug)
+        return ctx
+
+    def form_valid(self, form):
+        evaD = DiarioTrabajo()
+        filtro = form.cleaned_data['DT_maestro']
+        maes = Profesor.objects.get(pro_nombre=filtro)
+        evaD.DT_maestro = maes
+        filtroalum = form.cleaned_data['DT_alumno']
+        slug = self.kwargs['slug']
+        alu = alumnos.objects.get(slug=slug)
+        evaD.DT_alumno = alu
+        evaD.DT_fecha = form.cleaned_data['DT_fecha']
+        evaD.DT_descripcion = form.cleaned_data['DT_descripcion']
+        evaD.DT_actividadApoyo = form.cleaned_data['DT_actividadApoyo']
+        evaD.DT_necesidades = form.cleaned_data['DT_necesidades']
+        evaD.save()
+        return super(EvaDiario,self).form_valid(form)
+
+def detalleEvalSem(request, slug):
+    eva = Evaluacion.objects.select_related().get(id = slug);
+    ctx = {"Evaluacion": eva}
+    return render(request, 'evaluaciones/detalleevaluacion.html', ctx)
+
+def detalleDiario(request, slug):
+    dia = DiarioTrabajo.objects.select_related().get(id = slug);
+    ctx = {"Diario":dia}
+    return render(request, 'alumnos/DetalleDiario.html', ctx)
+
+def reporteEvaluacionAlumno(request,slug):
+    alumn = alumnos.objects.get(slug= slug)
+    reportes = Evaluacion.objects.filter(E_alumno = alumn)
+    ctx = {"object_list" : reportes}
+    return render(request, 'evaluaciones/reporteEvaluacion.html',ctx)
+
+def reporteDiarioAlumno(request, slug):
+    alumn = alumnos.objects.get(slug,slug)
+    diarios = DiarioTrabajo.objects.get(DT_alumno = alumn)
+    ctx = {"object_list":diarios}
+    return render(request, 'evaluaciones/reporteDiario.html', ctx)

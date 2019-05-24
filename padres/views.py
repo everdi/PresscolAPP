@@ -45,6 +45,24 @@ def updateTutores(request):
 
     return HttpResponseRedirect(url)
 
+def updateTutores(request):
+    url = '/'
+    if request.method == 'POST':
+        slug = request.POST['slug']
+        alm = alumnos.objects.get(slug = slug)
+        tuto = json.loads(request.POST['alu_tutores'])
+        alm.alu_tutores.clear()
+        alm.save()
+        for x in range(len(tuto)):
+            tut = (tuto[x]['Usuario'])
+            usu = User.objects.get(username = tut)
+            tutor = Tutor.objects.get(tut_nombre = usu)
+            alm.alu_tutores.add(tutor)
+        alm.save()
+        url='/addtutor/' + str(slug)
+
+    return HttpResponseRedirect(url)
+
 class addTutor(generic.FormView):
     template_name = 'padres/agregar.html'
     form_class = AddTutorForm
@@ -64,3 +82,44 @@ class addTutor(generic.FormView):
         tut.save()
         return super(addTutor,self).form_valid(form)
         
+def tutorAsign(request, slug):
+    dat = slug
+    almn = alumnos.objects.get(slug = dat)
+    tutores = []
+    for aln in almn.alu_tutores.all():
+        ud = User.objects.get(username = aln)
+        pad = Tutor.objects.get(tut_nombre = ud)
+        tutores.append({'Apellidos':pad.tut_apellidos})
+    
+    ctx = {'Alumno': almn, 'Padres': tutores}
+    return render(request, 'alumnos/alumnotutores.html', ctx)
+
+class TutoresReporte(generic.ListView):
+    template_name = 'padres/reporte.html'
+    model = Tutor
+
+def Detail_Tutor(request, slug):
+    tutnm = slug
+    usr = User.objects.get(username=tutnm)
+    tut = Tutor.objects.get(tut_nombre = usr)
+    alum = alumnos.objects.filter(alu_tutores__in = [tut])
+   
+    ctx = {"Tutor": tut, "Alumnos": alum}
+    return render(request, 'padres/detalletutor.html', ctx)
+
+    
+def ActualizarTutores(request,slug):
+    usr= User.objects.get(username = slug)
+    tut = Tutor.objects.get(tut_nombre=usr)
+    if request.method == 'POST':
+        usr.set_password(request.POST['password1'])
+        usr.save()
+        tut.tut_apellidos = request.POST['nombre']
+        tut.tut_numero = request.POST['telefono']
+        tut.tut_parentesco = request.POST['parentesco']
+        tut.tut_descripcion = request.POST['descripcion']
+        tut.tut_domicilio = request.POST['domicilio']
+        tut.save()
+
+    ctx =  {'Tutor': tut, 'Usuario':usr}
+    return render(request, 'padres/actualizatutor.html', ctx )
