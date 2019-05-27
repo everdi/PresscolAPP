@@ -1,8 +1,20 @@
 from django.db import models
 from alumnos.models import alumnos
+<<<<<<< HEAD
 from padres.models import Profesor
 from django.db.models.manager import EmptyManager
 
+=======
+<<<<<<< HEAD
+from padres.models import Profesor
+from django.db.models.manager import EmptyManager
+
+=======
+from datetime import datetime
+from django.db.models.manager import EmptyManager
+# Create your models here.
+>>>>>>> dd10d8d89403f4609398793d3fae96796e270984
+>>>>>>> 060ead067092a5052f242124fc59013c05196a48
 
 class grupos(models.Model):
     gru_clave = models.CharField(max_length = 10)
@@ -25,7 +37,15 @@ class DiarioTrabajo(models.Model):
 
     def __str__(self):
         return str(self.DT_alumno)
+<<<<<<< HEAD
     
+=======
+<<<<<<< HEAD
+    
+=======
+
+>>>>>>> dd10d8d89403f4609398793d3fae96796e270984
+>>>>>>> 060ead067092a5052f242124fc59013c05196a48
 class Evaluacion(models.Model):
     E_maestro = models.ForeignKey(Profesor, on_delete = models.CASCADE)
     E_alumno = models.ForeignKey(alumnos, on_delete = models.CASCADE)
@@ -117,4 +137,12 @@ class Evaluacion(models.Model):
     E_conocePractica = models.IntegerField(null=True)
     E_conocePropone = models.IntegerField(null=True)
     E_reconoceAmbien = models.IntegerField(null=True)
+<<<<<<< HEAD
     E_identificaPeligro = models.IntegerField(null=True)
+=======
+<<<<<<< HEAD
+    E_identificaPeligro = models.IntegerField(null=True)
+=======
+    E_identificaPeligro = models.IntegerField(null=True)
+>>>>>>> dd10d8d89403f4609398793d3fae96796e270984
+>>>>>>> 060ead067092a5052f242124fc59013c05196a48
