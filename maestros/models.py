@@ -1,10 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
-from django.utils.translation import ugettext as _
-from padres.models import Profesor
 from alumnos.models import alumnos
-from datetime import datetime
-# Create your models here.
+from padres.models import Profesor
+from django.db.models.manager import EmptyManager
+
 
 class grupos(models.Model):
     gru_clave = models.CharField(max_length = 10)
@@ -27,7 +25,7 @@ class DiarioTrabajo(models.Model):
 
     def __str__(self):
         return str(self.DT_alumno)
-
+    
 class Evaluacion(models.Model):
     E_maestro = models.ForeignKey(Profesor, on_delete = models.CASCADE)
     E_alumno = models.ForeignKey(alumnos, on_delete = models.CASCADE)
