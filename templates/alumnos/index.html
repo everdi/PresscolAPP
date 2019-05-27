@@ -1,0 +1,152 @@
+ {% extends 'base.html' %}
+  {% block title %}Inicio - Bienvenido{% endblock %}
+
+{% block content %}
+{% if user.is_staff is False %}
+{% if perms.padres.is_tutorr %}
+    {% for alm in Alumno %}
+
+<div class="mr-md-3 mt-4 mb-4 card border rounded border-warning float-left " style="max-width:300px; height: 600px;">
+<img src="{{ alm.alu_foto.url }}" class="card-img-top border-bottom"/>
+    <div class="card-body border-bottom">
+<h2 class="form-label text-center">Alumno</h2>
+    </div>
+    <div class="card-body">
+        <div class="form-inline form-group">
+            <h4 class="card-title">{{alm.alu_nombre}}</h4>
+            <h6>Fecha de ingreso: {{alm.alu_fechaIngreso}}</h6>
+            <p class="w-100 card-text">{{alm.alu_observaciones}}</p>
+            <h5 class="w-100" >Evaluacion semanal<span onclick="window.open('reporte/evallu/{{alm.slug}}')" style="color: #17a2b8;" class="oi oi-info"></span></h5>
+            <h5 class="w-100" >Evaluacion diaria<span onclick="window.open('reporte/diarioalu/{{alm.slug}}')" style="color: #17a2b8;" class="oi oi-info"></span></h5>
+        </div>
+    </div>
+</div>
+
+{%endfor%}
+    {% elif perms.padres.is_teacher %}
+    <div class="w-100">
+    <div class="mx-a mt-4 mb-4 card border rounded border border-success float-left" style="width:300px; height: 505px;">
+                    <div class="border-bottom">
+                        <h2 class="form-label text-center">Perfil <span style="color: #fe6265;" title="Modificar" class="oi oi-pencil" onclick="window.open('/actualiza/maestro/{{Perfil.pro_nombre}}')"></span></h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <h4 class="card-title">{{Perfil.pro_nombres}}</h4>
+                            <h6 class="card-text">{{Perfil.pro_apellidoPaterno}}</h6>
+                            <h6 class="card-text">{{Perfil.pro_apellidoMaterno}}</h6>
+                            <h6>Fecha de nacimiento: {{Perfil.pro_fechaNacimento}}</h6>
+                        </div>
+                    </div>
+        </div>
+    </div>
+    {% load inclusion_tags %}
+        {% for gp in Grupos %}  
+
+<div class="mr-md-3 mt-4 mb-4 card w-100 border rounded border-danger float-left " style="height: 505px;">
+    <div class=" border-bottom">
+<h2 class="form-label text-center">Grupo  <span title="Editar" class="oi oi-pencil" style="color: #fe6265;" onclick="window.open('/actualiza/grupo/{{gp.id}}')"></span></h2>
+    </div>
+    <div class="card-body">
+        <div class="float-left border-right" style="min-width: 320px;">
+        <div class="form-group" style="width: 100%;">
+            <h4 class="card-title w-100 text-center">Clave: {{gp.gru_clave}}</h4>
+            <h6 class="w-100">{{gp.gru_alumnos.alu_nombre.all}}</h6>
+            <h6 class="w-100">salon: {{gp.gru_salon}}</h6>
+            <h6 class="w-100">Grado: {{gp.gru_grado}}</h6>
+            <h6 class="w-100">total alumnos: {{gp.gru_alumnos.all|length}}</h6>
+        </div>
+            <h5 class="w-100">Alumnos | Reporte diario</h5>
+        <div class="float-left" style="padding: 10px; max-height: 242px; overflow-x: auto; min-width: 320px;">
+        <table class="table table-bordered" >
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>--</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in Evaluados %}
+                {% if e.Grupo == gp.id %}
+                {% for x in gp.gru_alumnos.all %}
+                <tr><td>{{x.alu_nombre}}</td>
+                    {% if x.id in e.Diario.0.Alumno %}
+                        {% with e.Diario.0.Alumno|get_at_index:x.id as indice %}
+                        <td onclick="window.location='detalle/evaluacion/diario/{{e.Diario.0.Diario.0}}'" title="Ver evaluacion" id="{{ e.Diario.0.Diario|get_data:indice }}"><span style="color: #17a2b8;" class="oi oi-info"></span></td>
+                        {% endwith %}
+                    {% else %}
+                    <td onclick="window.location='/diario/{{x.slug}}'" title="Evaluar"><span style="color: #e4a200;" class="oi oi-calendar" aria-hidden="true"> </span></td>
+                    {% endif %}
+                    
+                </tr>
+                {% endfor %}
+                {% endif  %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+        </div>
+        <div class="float-left mx-auto border-right" style="padding: 10px; height: 430px; min-width: 320px;">
+            <h5 class="w-100 text-center" >Alumnos no evaluados semanal</h5>
+            <div  style="height: 400px; overflow-x: auto;">
+            <table id="NoEvals" class="table table-bordered">
+            <thead><tr>
+                    <th>Nombre</th>
+                    <th>--</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in Evaluados %}
+                {%if e.Grupo == gp.id%}
+                {% for x in gp.gru_alumnos.all %}
+                {% if x.id not in e.Alumnos %}
+                    <tr>
+                        <td>{{x.alu_nombre}}</td>
+                        <td onclick="window.open('/evaluar/{{x.slug}}')" title="Evaluar"><span style="color: #e4a200;" class="oi oi-clipboard" aria-hidden="true"> </span></td>
+
+                    </tr>
+                  {% endif %}  
+                {% endfor %}
+                  {% endif %}  
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+        </div>
+        <div class="float-left" style="height: 430px; min-width: 320px">
+            <h5 class="w-100 text-center">Alumnos Evaluados semanal</h5>
+            <div style="padding: 10px; height: 480px; overflow-x: auto;">
+            <table id="Evals" style="padding: 10px;" class="table table-bordered" >
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>--</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in Evaluados %}
+                {%if e.Grupo == gp.id%}
+                {% for x in gp.gru_alumnos.all %}
+                {% if x.id in e.Alumnos %}
+                    <tr>
+                        <td>{{x.alu_nombre}}</td>
+                        {%for ev in e.EvalId %}
+                        {% if ev.IDA == x.id %}
+                        <td onclick="window.location ='/detalle/evaluacion/semanal/{{ev.EvaId}}'" title="Mas informacion"><span style="color: #17a2b8;" class="oi oi-info"></span></td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                  {% endif %}  
+                {% endfor %}
+                  {% endif %}  
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    </div>
+</div>
+                {% endfor %}
+
+{% endif %}
+{% endif %}
+{% endblock %}
