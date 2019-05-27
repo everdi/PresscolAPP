@@ -10,6 +10,8 @@ class AddTutorForm(UserCreationForm):
     descrip = forms.CharField(label='Descripcion:', widget=forms.TextInput(attrs={'class':'form-control'}))
     domicilio = forms.CharField(label='Domicilio:',widget=forms.TextInput(attrs={'class':'form-control'}))
     telefono = forms.CharField(label='Telefono:', widget=forms.TextInput(attrs={'type':'number', 'class':'form-control'}))
+#    password1=forms.CharField(label='Contrasena:',forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+#    password2=forms.CharField(label='Confirmar contrasena:',forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password Again'}))
     
     class Meta(UserCreationForm.Meta):
         model = User
